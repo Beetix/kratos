@@ -341,7 +341,16 @@ func (s *Strategy) recoveryIssueSession(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	http.Redirect(w, r, sf.AppendTo(s.c.SelfServiceFlowSettingsUI()).String(), http.StatusFound)
+	//http.Redirect(w, r, sf.AppendTo(s.c.SelfServiceFlowSettingsUI()).String(), http.StatusFound)
+
+    ru, err := url.Parse(f.RequestURL)
+    if err != nil {
+		s.d.SelfServiceErrorManager().Forward(r.Context(), w, r, err)
+    }
+
+	x.SecureContentNegotiationRedirection(w, r, sess.Declassify(), sf.AppendTo(ru).String(),
+		s.d.Writer(), s.c, x.SecureRedirectOverrideDefaultReturnTo(s.c.SelfServiceFlowRecoveryReturnTo()))
+
 }
 
 func (s *Strategy) recoveryUseToken(w http.ResponseWriter, r *http.Request, body *completeSelfServiceRecoveryFlowWithLinkMethodParameters) {
